@@ -1,0 +1,106 @@
+apply plugin: 'com.jfrog.bintray'
+apply plugin: 'com.github.dcendents.android-maven'
+
+group = 'com.github.woodyhi'
+version = '1.0.0'
+project.archivesBaseName = 'context-provider' // set artifactid
+
+def siteUrl = 'https://github.com/woodyhi/context-provider'
+def gitUrl = 'https://github.com/woodyhi/context-provider.git'
+
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+
+task javadoc(type: Javadoc) {
+    failOnError = false
+    options.encoding = "UTF-8" // 避免注释中有中文时乱码
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives javadocJar
+    archives sourcesJar
+}
+
+
+bintray {
+    user = project.hasProperty('bintray.user') ? project.property('bintray.user') : System.getenv('BINTRAY_USER')
+    key = project.hasProperty('bintray.apikey') ? project.property('bintray.apikey') : System.getenv('BINTRAY_API_KEY')
+
+    dryRun = false // [Default:false] 如果true则不会上传
+    publish = true // [Default: false] 上传后是否发布
+    override = true // [Default: false] Whether to override version artifacts already published
+
+    configurations = ['archives'] //When uploading configuration files
+
+    pkg {
+        repo = 'woodyhi'
+        name = 'context-provider'
+        desc = 'Android Context Provider'
+        websiteUrl = siteUrl
+//        issueTrackerUrl = 'https://github.com/bintray/bintray-examples/issues'
+        vcsUrl = gitUrl
+        licenses = ['Apache-2.0']
+//        labels = ['aar', 'android']
+        publicDownloadNumbers = true
+        version {
+            name = this.version
+            desc = "${project.name}-${this.version}"
+            released = new Date()
+            vcsTag = this.version
+        }
+    }
+}
+
+install {
+    repositories.mavenInstaller {
+        pom { // This generates POM.xml
+            project {
+                packaging 'aar'
+                name 'ContextProvider'
+                url siteUrl
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id 'woodyhi'
+                        name 'Woody'
+                        email 'woodyjc@foxmail.com'
+                    }
+                }
+                scm {
+                    connection gitUrl
+                    developerConnection gitUrl
+                    url siteUrl
+                }
+            }
+
+            pom.withXml {
+                asNode().dependencies.'*'.each {
+                    if (it.scope*.value != null) {
+                        it.scope*.value = 'compile'
+                    }
+                }
+
+                asNode().dependencyManagement.dependencies.'*'.each {
+                    if (it.scope*.value != null) {
+                        it.scope*.value = 'compile'
+                    }
+                }
+            }
+
+        }
+    }
+}

@@ -1,0 +1,10 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.github.woodyhi.context">
+
+    <application>
+        <provider
+            android:name="com.github.woodyhi.context.ContextProvider"
+            android:authorities="${applicationId}.context.ContextProvider"
+            android:exported="false" />
+    </application>
+</manifest>
