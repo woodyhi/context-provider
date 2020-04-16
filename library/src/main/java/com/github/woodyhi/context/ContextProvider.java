@@ -1,5 +1,6 @@
 package com.github.woodyhi.context;
 
+import android.annotation.SuppressLint;
 import android.app.Application;
 import android.content.ContentProvider;
 import android.content.ContentValues;
@@ -41,6 +42,7 @@ public class ContextProvider extends ContentProvider {
      *            </p>
      * @return T android.app.Application or its derived class.
      */
+    @SuppressWarnings("unchecked")
     public static <T extends Application> T getApplication() {
         return appContext == null ? null : (T) appContext;
     }

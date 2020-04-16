@@ -8,6 +8,12 @@ project.archivesBaseName = 'context-provider' // set artifactid
 def siteUrl = 'https://github.com/woodyhi/context-provider'
 def gitUrl = 'https://github.com/woodyhi/context-provider.git'
 
+if (JavaVersion.current().isJava8Compatible()) {
+    tasks.withType(Javadoc) {
+        options.addStringOption('Xdoclint:none', '-quiet')
+    }
+}
+
 task sourcesJar(type: Jar) {
     from android.sourceSets.main.java.srcDirs
     classifier = 'sources'
@@ -18,6 +24,13 @@ task javadoc(type: Javadoc) {
     options.encoding = "UTF-8" // 避免注释中有中文时乱码
     source = android.sourceSets.main.java.srcDirs
     classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+
+afterEvaluate {
+    // 这里解决 javadoc 找不到类 androidx.annotation.Nullable
+    javadoc.classpath += files(android.libraryVariants.collect { variant ->
+        variant.javaCompile.classpath.files
+    })
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
@@ -86,21 +99,6 @@ install {
                     url siteUrl
                 }
             }
-
-            pom.withXml {
-                asNode().dependencies.'*'.each {
-                    if (it.scope*.value != null) {
-                        it.scope*.value = 'compile'
-                    }
-                }
-
-                asNode().dependencyManagement.dependencies.'*'.each {
-                    if (it.scope*.value != null) {
-                        it.scope*.value = 'compile'
-                    }
-                }
-            }
-
         }
     }
 }
